@@ -7,9 +7,9 @@ import random
 pygame.init()
 
 # SCREEN AND SIZE
-W, H = 500, 700
+W, H = 600, 700
 SCREEN = pygame.display.set_mode((W, H))
-pygame.display.set_caption("OD")
+pygame.display.set_caption("Space_Shooter")
 
 # CLOCK AND FRAMES
 clock = pygame.time.Clock()
@@ -29,15 +29,16 @@ BG_1 = pygame.image.load(r"objects\space.jpg")
 # LOADING LULU
 LULU_for_BG = pygame.image.load(r"objects\bg_lulu.png")
 LULU_for_BG.convert()
-LULU = pygame.image.load(r"objects\lulu.png")
-pygame.display.set_icon(LULU)
+alien = pygame.image.load(r"objects\shipBlue_manned.png")
+pygame.display.set_icon(alien)
 
 # sounds
-lulu_sound_load= pygame.mixer.music.load(r"sounds\Lulu's Sound.mp3")
-lulu_sound = pygame.mixer.Sound(r"sounds\Lulu's Sound.mp3")
-# pygame.mixer.music.play(-1)
+fire_sound = pygame.mixer.Sound(r"sounds\fire.ogg")
+Space_sound = pygame.mixer.music.load(r"sounds\space_sound.mp3")
+pygame.mixer.music.play(-1)
+pygame.mixer.music.set_volume(0.2)
 
-# SETTING LOOP RUNNING VARIABLE
+# RUNNING
 RUNNING = True
 
 # BG CORDINATES
@@ -49,16 +50,16 @@ bg_lulu_x = W/2 - LULU_for_BG.get_width()/2
 bg_lulu_y = H/2 - LULU_for_BG.get_height()/2
 
 # LULU PARAMETERS
-Lulu_width, Lulu_height = 50, 50
-lulu_speed = 3
-no_of_lulus = 10
-lulus = []
-lulus_speed = []
-Lulu_Bullets = []
+alien_width, alien_height = 50, 50
+alien_speed = 3
+no_of_aliens = 10
+aliens = []
+aliens_speed = []
+alien_Bullets = []
 
 # SHIP PARAMETERS
 space_ship = pygame.image.load(r"objects\ship.png")
-space_ship_width, space_ship_height = 40, 40
+space_ship_width, space_ship_height = 60, 60
 space_ship = pygame.transform.scale(space_ship, (space_ship_width, space_ship_height))
 space_ship.convert()
 space_ship.set_colorkey(WHITE)
@@ -73,8 +74,6 @@ change_speed = 0
 index = 0
 no_of_bullets = 20
 
-# firing is set to false when not firing
-firing = False
 
 # BACKGROUND LOOP 
 def BG_Loop(bg):
@@ -95,23 +94,23 @@ def draw_text(surface, text, color, x, y, font_size):
     font = pygame.font.Font(None, font_size)
     text_surface = font.render(text, True, color)
     text_rect = text_surface.get_rect()
-    text_rect.center = (x+5+font_size), (y+font_size//2-5)
+    text_rect.center = (x), (y)
     surface.blit(text_surface, text_rect)
             
 # DEFINING MULTIPLE LULUS
-for i in range(no_of_lulus):
-    LULU = pygame.image.load(r"objects\lulu.png")
-    LULU = pygame.transform.scale(LULU, (Lulu_width, Lulu_height))
-    LULU.convert()
-    lulu_rect = LULU.get_rect()
-    lulu_rect.center = (random.randint(Lulu_width, W-Lulu_width), random.randint(-H * 3, 0))
-    lulus.append(lulu_rect) 
-    lulu_speed = random.randint(2, 4)
-    lulus_speed.append(lulu_speed)
+for i in range(no_of_aliens):
+    alien = pygame.image.load(r"objects\shipBlue_manned.png")
+    alien = pygame.transform.scale(alien, (alien_width, alien_height))
+    alien.convert()
+    alien_rect = alien.get_rect()
+    alien_rect.center = (random.randint(alien_width, W-alien_width), random.randint(-H * 3, 0))
+    aliens.append(alien_rect) 
+    alien_speed = random.randint(2, 4)
+    aliens_speed.append(alien_speed)
     
 # fire images
 for i in range(no_of_bullets):
-    fire = pygame.image.load(r"objects\coned_bread.png")
+    fire = pygame.image.load(r"objects\fire.png")
     fire_width, fire_height = 20, 20
     fire = pygame.transform.scale(fire, (fire_width, fire_height))
     fire.convert
@@ -123,31 +122,27 @@ for i in range(no_of_bullets):
 
  # MAIN LOOP 
 while RUNNING:
-    # lulu_sound.play() 
-
     # Background Loop
     BG_Loop(BG_0)
     
     # LULU'S movements
-    for i in range(no_of_lulus):
-        lulus[i].y += lulus_speed[i]
+    for i in range(no_of_aliens):
+        aliens[i].y += aliens_speed[i]
         
-
-        if lulus[i].y >= H:
-            lulus[i].x = random.randint(0, W - Lulu_width)
-            lulus[i].y = random.randint(-H * 3, -Lulu_height)
-
-        if lulus[i].colliderect(space_ship_rect):
+        if aliens[i].y >= H:
+            aliens[i].x = random.randint(0, W - alien_width)
+            aliens[i].y = random.randint(-H * 3, -alien_height)
+    
+        if aliens[i].colliderect(space_ship_rect):
             RUNNING = False
 
         for j in range(no_of_bullets):
-            if lulus[i].colliderect(firing_ammo_rect[j]):
-                lulus[i].x = random.randint(0, W - Lulu_width)
-                lulus[i].y = random.randint(-H * 3, -Lulu_height)
+            if aliens[i].colliderect(firing_ammo_rect[j]):
+                aliens[i].x = random.randint(0, W - alien_width)
+                aliens[i].y = random.randint(-H * 3, -alien_height)
                 firing_ammo_rect[j].centerx = -fire_width
                 score += 1
-
-        SCREEN.blit(LULU, lulus[i])       
+        SCREEN.blit(alien, aliens[i])       
 
     # EVENT-FOR LOOP
     for event in pygame.event.get():
@@ -164,12 +159,15 @@ while RUNNING:
                 index += 1
                 index %= len(firing_ammo_rect)
                 firing_ammo_rect[index].center = space_ship_rect.center
+                fire_sound.play()
+                fire_sound.set_volume(0.5)
+
         if event.type == pygame.KEYUP:
             if event.key == pygame.K_RIGHT:
                 changex = 0
             if event.key == pygame.K_LEFT: 
                 changex = 0
-
+        
     # SPACESHIP MOVEMENT
     space_ship_rect.centerx += changex
     if space_ship_rect.right >= W:
@@ -185,12 +183,12 @@ while RUNNING:
             if firing_ammo_rect[i].centery <= 0:
                 firing_ammo_rect[i].centerx = -fire_width 
             SCREEN.blit(firing_ammo[i], firing_ammo_rect[j])
-            
+    
     # UPDATING fps 
     if score >= 20:
         fps += 0.008
     SCREEN.blit(space_ship, space_ship_rect)
-    draw_text(surface=SCREEN, text=f"score:{score}", color=WHITE,  x=0, y=0, font_size=30)
-
+    draw_text(surface=SCREEN, text= f"score: {score}", color=WHITE,  x=45 , y=10, font_size=30)
+    
     pygame.display.flip()
     clock.tick(fps)
